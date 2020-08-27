@@ -1,0 +1,12 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+numpy = "*"
+ipdb = "==0.13.2"
+ipython = "*"
+
+[requires]
+python_version = "3.8"
