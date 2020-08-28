@@ -43,31 +43,26 @@ def get_moves(game: Game, player_num: int):
     # for each tree, there is: grow, harvest, or throw a seed.
     trees: List[Tree] = game.trees
     player: Player = game.players[player_num]
-    moves: List[Move] = []
     light_map: np.ndarray = game.get_light_map()
     tree_map: np.ndarray = game.get_tree_map()
-    moonlight = player.moonlight
+    moves: List[Move] = []
     for size in range(4):
         if player.reserve.count[size]:
             cost = player.reserve.cost(size)
-            if moonlight >= cost:
-                move = Move(player_num, "Buy", size, -1, -1, -1, -1, cost)
-                moves.append(move)
+            move = Move(player_num, "Buy", size, -1, -1, -1, -1, cost)
+            moves.append(move)
     for tree in trees:
         if tree.player == player_num and light_map[tree.y, tree.x]:
             if tree.size == 3:
                 move = Move(player_num, "Harvest", -1, tree.y, tree.x, -1, -1, -1)
-                if move.cost() <= moonlight:
-                    moves.append(move)
-            else:
+                moves.append(move)
+            elif player.available[tree.size + 1]:
                 move = Move(player_num, "Grow", tree.size + 1, tree.y, tree.x, -1, -1, -1)
-                if move.cost() <= moonlight and player.available[tree.size + 1]:
-                    moves.append(move)
+                moves.append(move)
             if tree.size > 0 and player.available[SEED]:
                 # throw-actions.
                 # check open neighbor spaces of distance up to size,
                 # and add any throwables.
-
                 for y_dist_from_tree in range(-tree.size, tree.size + 1):
                     i = tree.y + y_dist_from_tree
                     if i < 0 or i > 6:
@@ -78,13 +73,13 @@ def get_moves(game: Game, player_num: int):
                     ):
                         if light_map[i, j] and tree_map[i, j] == -1:
                             tree_map[i, j] = -2
-
                             move = Move(player_num, "Throw", 0, tree.y, tree.x, i, j, -1)
-                            if move.cost() <= moonlight:
-                                moves.append(move)
+                            moves.append(move)
+    moonlight = player.moonlight
+    valid_moves = [move for move in moves if move.cost() <= moonlight]
     Printer.print_hex_grid(tree_map)
-    Printer.print_moves(player, player_num, moves)
-    return moves
+    Printer.print_moves(player, player_num, valid_moves)
+    return valid_moves
 
 
 def get_moonlight(trees, player, light_map):
