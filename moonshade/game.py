@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple, Iterator
 
 import numpy as np
 
@@ -39,6 +39,17 @@ from moonshade.printer import Printer
 # game setup: select 1 of the 18 edge spaces; then repeat for 2 x #players
 
 
+def get_throwable_range(tree: Tree) -> Iterator[Tuple[int, int]]:
+    for y_dist_from_tree in range(-tree.size, tree.size + 1):
+        i = tree.y + y_dist_from_tree
+        if 0 <= i <= 6:
+            for j in range(
+                tree.x - tree.size + max(0, y_dist_from_tree), tree.x + tree.size + min(0, y_dist_from_tree) + 1,
+            ):
+                if 0 <= j <= 6:
+                    yield i, j
+
+
 def get_moves(game: Game, player_num: int):
     # for each tree, there is: grow, harvest, or throw a seed.
     trees: List[Tree] = game.trees
@@ -63,18 +74,11 @@ def get_moves(game: Game, player_num: int):
                 # throw-actions.
                 # check open neighbor spaces of distance up to size,
                 # and add any throwables.
-                for y_dist_from_tree in range(-tree.size, tree.size + 1):
-                    i = tree.y + y_dist_from_tree
-                    if i < 0 or i > 6:
-                        continue
-                    for j in range(
-                        max(0, tree.x - tree.size + max(0, y_dist_from_tree)),
-                        min(7, tree.x + tree.size + min(0, y_dist_from_tree) + 1),
-                    ):
-                        if light_map[i, j] and tree_map[i, j] == -1:
-                            tree_map[i, j] = -2
-                            move = Move(player_num, "Throw", 0, tree.y, tree.x, i, j, -1)
-                            moves.append(move)
+                for i, j in get_throwable_range(tree):
+                    if light_map[i, j] and tree_map[i, j] == -1:
+                        tree_map[i, j] = -2
+                        move = Move(player_num, "Throw", 0, tree.y, tree.x, i, j, -1)
+                        moves.append(move)
     moonlight = player.moonlight
     valid_moves = [move for move in moves if move.cost() <= moonlight]
     Printer.print_hex_grid(tree_map)
