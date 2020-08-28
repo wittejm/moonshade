@@ -161,7 +161,7 @@ class Game:
             player.available[move.new_size] -= 1
         elif move.name == "Harvest":
             self.trees = [tree for tree in self.trees if tree != move.source_tree]
-            player.reserve.count[3] += 1  # Large tree
+            player.reserve.count[LARGE] += 1
         elif move.name == "Throw":
             self.trees.append(Tree(move.player, 0, move.y_throw, move.x_throw))
             player.available[SEED] -= 1
