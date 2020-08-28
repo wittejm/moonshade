@@ -109,7 +109,7 @@ class Player:
 
 @dataclass
 class Game:
-    players: Tuple[Player, Player, Player, Player]
+    players: Tuple[Player, ...]
     trees: List[Tree]
     direction: int
 
@@ -185,7 +185,7 @@ class Game:
                 if tree.y == move.y0 and tree.x == move.x0:
                     tree.size+=1
         elif move.name == "Harvest":
-            self.trees = self.trees[:tree_index] + trees[tree_index+1:]
+            self.trees = self.trees[:tree_index] + self.trees[tree_index+1:]
         elif move.name == "Throw":
             self.trees.append(Tree(move.player, 0, move.y1, move.x1))
 
