@@ -60,15 +60,15 @@ def get_moves(game: Game, player_num: int) -> Tuple[List[Move], np.ndarray]:
     for size in range(4):
         if player.reserve.count[size]:
             cost = player.reserve.cost(size)
-            move = Move(player_num, "Buy", size, -1, -1, -1, -1, cost)
+            move = Move(player_num, "Buy", new_size=size, y0=-1, x0=-1, y1=-1, x1=-1, buy_cost=cost)
             moves.append(move)
     for tree in trees:
         if tree.player == player_num and light_map[tree.y, tree.x]:
             if tree.size == 3:
-                move = Move(player_num, "Harvest", -1, tree.y, tree.x, -1, -1, -1)
+                move = Move(player_num, "Harvest", new_size=-1, y0=tree.y, x0=tree.x, y1=-1, x1=-1, buy_cost=-1)
                 moves.append(move)
             elif player.available[tree.size + 1]:
-                move = Move(player_num, "Grow", tree.size + 1, tree.y, tree.x, -1, -1, -1)
+                move = Move(player_num, "Grow", new_size=tree.size + 1, y0=tree.y, x0=tree.x, y1=-1, x1=-1, buy_cost=-1)
                 moves.append(move)
             if tree.size > 0 and player.available[SEED]:
                 # throw-actions.
@@ -77,7 +77,7 @@ def get_moves(game: Game, player_num: int) -> Tuple[List[Move], np.ndarray]:
                 for i, j in get_throwable_range(tree):
                     if light_map[i, j] and tree_map[i, j] == -1:
                         tree_map[i, j] = -2
-                        move = Move(player_num, "Throw", 0, tree.y, tree.x, i, j, -1)
+                        move = Move(player_num, "Throw", new_size=0, y0=tree.y, x0=tree.x, y1=i, x1=j, buy_cost=-1)
                         moves.append(move)
     moonlight = player.moonlight
     valid_moves = [move for move in moves if move.cost() <= moonlight]
