@@ -106,9 +106,8 @@ while True:
         response = input()
         if moves and response:
             index = int(response)
-            if index >= len(moves):
-                continue
-            game.apply_move(moves[index])
+            if 0 <= index < len(moves):
+                game.apply_move(moves[index])
         else:
             player_taking_turn = False
     player_num = (player_num + 1) % 3
