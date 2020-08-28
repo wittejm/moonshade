@@ -28,6 +28,15 @@ class Direction(str, Enum):
            Direction.SW: (1, 0)
         }[self]
 
+    # Adapted from https://stackoverflow.com/a/35905666/2750819
+    def next(self):
+        klass = self.__class__
+        members: List = list(klass)
+        index = members.index(self) + 1
+        if index >= len(members):
+            index = 0
+        return members[index]
+
     def __str__(self):
         return self
 

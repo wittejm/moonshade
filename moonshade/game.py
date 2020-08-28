@@ -127,7 +127,7 @@ while True:
     player_num = (player_num + 1) % 3
     turn_count += 1
     if turn_count % 3 == 0:
-        game.direction = (game.direction + 1) % 6
+        game.direction = game.direction.next()
         player_num = (player_num + 1) % 3
 
 # Need to support purchasing from the reserve
