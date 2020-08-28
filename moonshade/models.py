@@ -9,6 +9,8 @@ SMALL = 1
 MEDIUM = 2
 LARGE = 3
 
+CENTER = (3, 3)
+
 
 class Direction(str, Enum):
     W = "West facing"
@@ -73,6 +75,16 @@ class Tree:
     def get_neighbors(x: int, y: int) -> List[Tuple[int, int]]:
         return [(x + cx, y + cy) for cx, cy in Direction.cast().values()]
 
+    def level(self):
+        if (self.x, self.y) == CENTER:
+            return 3
+        elif (self.x, self.y) in Tree.get_nth_neighbors(1, [CENTER]):
+            return 2
+        elif (self.x, self.y) in Tree.get_nth_neighbors(2, [CENTER]):
+            return 1
+        elif (self.x, self.y) in Tree.get_nth_neighbors(3, [CENTER]):
+            return 0
+
 
 class Reserve:
     costs = ((1, 1, 2, 2), (2, 2, 3, 3), (3, 3, 4), (4, 5))
@@ -88,16 +100,16 @@ class Player:
     available: List[int]
     reserve: Reserve
     moonlight: int
-    victory_tokens: List[int]
+    scoring_tokens: List[int]
 
     @staticmethod
     def initial():
-        return Player(available=[2, 4, 1, 0], reserve=Reserve(), moonlight=0, victory_tokens=[])
+        return Player(available=[2, 4, 1, 0], reserve=Reserve(), moonlight=0, scoring_tokens=[])
 
 
 @dataclass
 class Move:
-    player: int
+    player_num: int
     name: str
     new_size: int
     source_tree: Optional[Tree]
@@ -121,6 +133,7 @@ class Game:
     players: Tuple[Player, ...]
     trees: List[Tree]
     direction: Direction
+    scoring_tokens: Dict[int, List[int]]
 
     @staticmethod
     def create_game(num_players):
@@ -135,6 +148,12 @@ class Game:
                 Tree(2, 1, 3, 6),
             ],  # assume 3 players
             direction=Direction.W,
+            scoring_tokens={
+                0: [14, 14, 13, 13, 13, 12, 12, 12, 12],
+                1: [17, 16, 16, 14, 14, 13, 13],
+                2: [19, 18, 18, 17, 17],
+                3: [22, 21, 20],
+            },
         )
         return game
 
@@ -174,7 +193,7 @@ class Game:
         return tree_map
 
     def apply_move(self, move: Move) -> Optional[Tree]:
-        player = self.players[move.player]
+        player = self.players[move.player_num]
         player.moonlight -= move.cost()
         if move.name == "Grow":
             move.source_tree.size += 1
@@ -185,8 +204,13 @@ class Game:
         elif move.name == "Harvest":
             self.trees = [tree for tree in self.trees if tree != move.source_tree]
             player.reserve.count[LARGE] += 1
+            level = move.source_tree.level()
+            while not self.scoring_tokens[level]:
+                level -= 1
+            token = self.scoring_tokens[level].pop(0)
+            player.scoring_tokens.append(token)
         elif move.name == "Throw":
-            new_tree = Tree(move.player, 0, move.y_throw, move.x_throw)
+            new_tree = Tree(move.player_num, 0, move.y_throw, move.x_throw)
             self.trees.append(new_tree)
             player.available[SEED] -= 1
             return new_tree

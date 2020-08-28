@@ -122,6 +122,8 @@ while rounds <= 3:
         game.direction = game.direction.next()
         player_num = (player_num + 1) % 3
 
+Printer.print_score(game)
+
 
 # All of these operations / steps need names.
 

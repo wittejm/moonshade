@@ -1,5 +1,5 @@
 from typing import List
-from moonshade.models import Direction, Move, Player
+from moonshade.models import Direction, Move, Player, Game
 
 
 def size_name(size):
@@ -53,3 +53,8 @@ class Printer:
             Printer.COLORS[player_num] + "Player " + str(player_num) + Printer.END_COLOR,
             "\nwhich move? (by index; leave blank to end turn) " if moves else "(no moves; press enter)",
         )
+
+    @staticmethod
+    def print_score(game: Game):
+        for i, player in enumerate(game.players):
+            print(f"Player {i} score is {sum(player.scoring_tokens)}")
