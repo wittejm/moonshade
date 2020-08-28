@@ -40,10 +40,10 @@ class Printer:
             print(
                 i,
                 " (" + str(move.cost()) + "):",
-                (move.y0, move.x0) if move.y0 >= 0 else "",
+                (move.source_tree.y, move.source_tree.x) if move.source_tree else "",
                 move.name,
                 size_name(move.new_size),
-                (move.y1, move.x1) if move.y1 >= 0 else "",
+                (move.y_throw, move.x_throw) if move.y_throw >= 0 else "",
             )
 
     @staticmethod

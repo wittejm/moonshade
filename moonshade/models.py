@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Tuple, List
+from typing import Tuple, List, Optional
 
 import numpy as np
 
@@ -72,6 +72,27 @@ class Player:
 
 
 @dataclass
+class Move:
+    player: int
+    name: str
+    new_size: int
+    source_tree: Optional[Tree]
+    y_throw: int
+    x_throw: int
+    buy_cost: int
+
+    def cost(self):
+        if self.name == "Grow":
+            return self.new_size
+        elif self.name == "Harvest":
+            return 4
+        elif self.name == "Throw":
+            return 1
+        elif self.name == "Buy":
+            return self.buy_cost
+
+
+@dataclass
 class Game:
     players: Tuple[Player, ...]
     trees: List[Tree]
@@ -129,50 +150,18 @@ class Game:
                 tree_map[y][x] = -3
         return tree_map
 
-    def apply_move(self, move):
+    def apply_move(self, move: Move):
         player = self.players[move.player]
         player.moonlight -= move.cost()
-        if move.name == "Harvest":
-            player.reserve.large += 1
-        elif move.name == "Grow":
+        if move.name == "Grow":
+            move.source_tree.size += 1
             player.reserve.count[move.new_size - 1] = min(
                 Reserve.MAX[move.new_size - 1], player.reserve.count[move.new_size - 1] + 1
             )
             player.available[move.new_size] -= 1
-        elif move.name == "Throw":
-            player.available[SEED] -= 1
-        for ind in range(len(self.trees)):
-            tree = self.trees[ind]
-            if tree.y == move.y0 and tree.x == move.x0:
-                tree_index = ind
-                break
-        if move.name == "Grow":
-            tree = self.trees[tree_index]
-            if tree.y == move.y0 and tree.x == move.x0:
-                tree.size += 1
         elif move.name == "Harvest":
-            self.trees = self.trees[:tree_index] + self.trees[tree_index + 1 :]
+            self.trees = [tree for tree in self.trees if tree != move.source_tree]
+            player.reserve.count[3] += 1  # Large tree
         elif move.name == "Throw":
-            self.trees.append(Tree(move.player, 0, move.y1, move.x1))
-
-
-@dataclass
-class Move:
-    player: int
-    name: str
-    new_size: int
-    y0: int
-    x0: int
-    y1: int
-    x1: int
-    buy_cost: int
-
-    def cost(self):
-        if self.name == "Grow":
-            return self.new_size
-        elif self.name == "Harvest":
-            return 4
-        elif self.name == "Throw":
-            return 1
-        elif self.name == "Buy":
-            return self.buy_cost
+            self.trees.append(Tree(move.player, 0, move.y_throw, move.x_throw))
+            player.available[SEED] -= 1
