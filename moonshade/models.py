@@ -165,3 +165,6 @@ class Game:
         elif move.name == "Throw":
             self.trees.append(Tree(move.player, 0, move.y_throw, move.x_throw))
             player.available[SEED] -= 1
+        elif move.name == "Buy":
+            player.available[move.new_size] += 1
+            player.reserve.count[move.new_size] -= 1

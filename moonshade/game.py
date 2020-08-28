@@ -125,8 +125,6 @@ while True:
         game.direction = game.direction.next()
         player_num = (player_num + 1) % 3
 
-# Need to support purchasing from the reserve
-
 # All of these operations / steps need names.
 
 # apply move does the following:
