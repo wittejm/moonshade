@@ -2,7 +2,7 @@ from typing import List, Tuple, Iterator
 
 import numpy as np
 
-from moonshade.models import Game, Move, SEED, Player, Tree
+from moonshade.models import Game, Move, SEED, Player, Tree, Direction
 from moonshade.printer import Printer
 
 # center space at (3,3)
@@ -99,10 +99,11 @@ def get_moonlight(trees, player, light_map):
 num_players = 3
 player_num = 0
 turn_count = 0
+rounds = 1
 
 game = Game.create_game(num_players)
 
-while True:
+while rounds <= 3:
     light_map = game.get_light_map()
     game.players[player_num].moonlight += get_moonlight(game.trees, player_num, light_map)
     player_taking_turn = True
@@ -127,8 +128,11 @@ while True:
     player_num = (player_num + 1) % 3
     turn_count += 1
     if turn_count % 3 == 0:
+        if game.direction == Direction.SW:
+            rounds += 1
         game.direction = game.direction.next()
         player_num = (player_num + 1) % 3
+
 
 # All of these operations / steps need names.
 
