@@ -36,10 +36,9 @@ class Printer:
         print(Printer.COLORS[player_num] + "Player " + str(player_num) + Printer.END_COLOR)
         print("Available:", player.available, ". Moonlight:", player.moonlight)
         print("Moves:")
-        for ind in range(len(moves)):
-            move = moves[ind]
+        for i, move in enumerate(moves):
             print(
-                ind,
+                i,
                 " (" + str(move.cost()) + "):",
                 (move.y0, move.x0) if move.y0 >= 0 else "",
                 move.name,
