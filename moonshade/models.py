@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Dict, Iterator
 
 import numpy as np
 
@@ -18,7 +18,8 @@ class Direction(str, Enum):
     SE = "Southeast facing"
     SW = "Southwest facing"
 
-    def cast(self):
+    @staticmethod
+    def cast():
         return {
             Direction.W: (0, -1),
             Direction.NW: (-1, -1),
@@ -26,7 +27,7 @@ class Direction(str, Enum):
             Direction.E: (0, 1),
             Direction.SE: (1, 1),
             Direction.SW: (1, 0),
-        }[self]
+        }
 
     # Adapted from https://stackoverflow.com/a/35905666/2750819
     def next(self):
@@ -48,6 +49,29 @@ class Tree:
     size: int
     y: int
     x: int
+
+    def get_range(self) -> Iterator[Tuple[int, int]]:
+        for x, y in Tree.get_nth_neighbors(self.size, [(self.x, self.y)]):
+            yield y, x
+
+    @staticmethod
+    def get_nth_neighbors(n: int, points: List[Tuple[int, int]]) -> List[Tuple[int, int]]:
+        """
+        For example, get_nth_neighbors(2, [(3,3)]) returns a list of points (hexagons)
+        that are within "2 away" from the (3,3) point, including itself.
+        """
+        if n == 0:
+            return points
+        else:
+            new_points = set(points)
+            for (x, y) in Tree.get_nth_neighbors(n - 1, points):
+                neighbors = Tree.get_neighbors(x, y)
+                new_points.update(set(neighbors))
+            return [(x, y) for (x, y) in new_points if 0 <= x <= 6 and 0 <= y <= 6]
+
+    @staticmethod
+    def get_neighbors(x: int, y: int) -> List[Tuple[int, int]]:
+        return [(x + cx, y + cy) for cx, cy in Direction.cast().values()]
 
 
 class Reserve:
@@ -116,7 +140,7 @@ class Game:
 
     def get_light_map(self) -> np.ndarray:
         light_map = np.ones((7, 7), dtype=int)
-        shadow_dir = self.direction.cast()
+        shadow_dir = Direction.cast()[self.direction]
         for tree in self.trees:
             for i in range(1, tree.size + 1):
                 if (
@@ -137,7 +161,6 @@ class Game:
         -2 is a reserved value for visualizing valid seed spots.
         -3 is off-board (upper-right, lower-left corner regions)
         """
-
         tree_map = -1 * np.ones((7, 7), dtype=int)
         for tree in self.trees:
             tree_map[tree.y][tree.x] = tree.size + tree.player * 4

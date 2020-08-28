@@ -39,17 +39,6 @@ from moonshade.printer import Printer
 # game setup: select 1 of the 18 edge spaces; then repeat for 2 x #players
 
 
-def get_throwable_range(tree: Tree) -> Iterator[Tuple[int, int]]:
-    for y_dist_from_tree in range(-tree.size, tree.size + 1):
-        i = tree.y + y_dist_from_tree
-        if 0 <= i <= 6:
-            for j in range(
-                tree.x - tree.size + max(0, y_dist_from_tree), tree.x + tree.size + min(0, y_dist_from_tree) + 1,
-            ):
-                if 0 <= j <= 6:
-                    yield i, j
-
-
 def get_moves(game: Game, player_num: int, touched_trees: List[Tree]) -> Tuple[List[Move], np.ndarray]:
     # for each tree, there is: grow, harvest, or throw a seed.
     trees: List[Tree] = game.trees
@@ -76,7 +65,7 @@ def get_moves(game: Game, player_num: int, touched_trees: List[Tree]) -> Tuple[L
                 # throw-actions.
                 # check open neighbor spaces of distance up to size,
                 # and add any throwables.
-                for i, j in get_throwable_range(tree):
+                for i, j in tree.get_range():
                     if light_map[i, j] and tree_map[i, j] == -1:
                         tree_map[i, j] = -2
                         move = Move(
