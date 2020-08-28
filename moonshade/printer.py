@@ -26,8 +26,7 @@ class Printer:
                 elif tree_map[i, j] == -1:
                     line += "-"
                 else:
-                    line += Printer.COLORS[int(tree_map[i, j] / 4)] + str(
-                        tree_map[i, j] % 4) + Printer.END_COLOR
+                    line += Printer.COLORS[int(tree_map[i, j] / 4)] + str(tree_map[i, j] % 4) + Printer.END_COLOR
                 line += " "
             outstr += line + "\n"
         print("\n----\n         0 1 2 3 4 5 6\n" + outstr + "\n----\n")

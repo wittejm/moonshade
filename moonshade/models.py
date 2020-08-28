@@ -20,12 +20,12 @@ class Direction(str, Enum):
 
     def cast(self):
         return {
-           Direction.W: (0, -1),
-           Direction.NW: (-1, -1),
-           Direction.NE: (-1, 0),
-           Direction.E: (0, 1),
-           Direction.SE: (1, 1),
-           Direction.SW: (1, 0)
+            Direction.W: (0, -1),
+            Direction.NW: (-1, -1),
+            Direction.NE: (-1, 0),
+            Direction.E: (0, 1),
+            Direction.SE: (1, 1),
+            Direction.SW: (1, 0),
         }[self]
 
     # Adapted from https://stackoverflow.com/a/35905666/2750819
@@ -89,11 +89,11 @@ class Game:
                 Tree(2, 1, 6, 6),
                 Tree(2, 1, 3, 6),
             ],  # assume 3 players
-            direction=Direction.W
+            direction=Direction.W,
         )
         return game
 
-    def get_light_map(self):
+    def get_light_map(self) -> np.ndarray:
         light_map = np.ones((7, 7), dtype=int)
         shadow_dir = self.direction.cast()
         for tree in self.trees:
@@ -108,7 +108,7 @@ class Game:
                 light_map[tree.y + (shadow_dir[0] * i)][tree.x + (shadow_dir[1] * i)] = 0
         return light_map
 
-    def get_tree_map(self):
+    def get_tree_map(self) -> np.ndarray:
         """
         From the set of trees, make the array whose values represent all the tree data
         -1 is empty space

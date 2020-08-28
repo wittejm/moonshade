@@ -1,6 +1,8 @@
 from typing import List
 
-from moonshade.models import Game, Move, SEED
+import numpy as np
+
+from moonshade.models import Game, Move, SEED, Player, Tree
 from moonshade.printer import Printer
 
 # center space at (3,3)
@@ -38,12 +40,12 @@ from moonshade.printer import Printer
 
 
 def get_moves(game: Game, player_num: int):
-    # for each tree, there is:grow, harvest, or throw a seed.
-    trees = game.trees
-    player = game.players[player_num]
+    # for each tree, there is: grow, harvest, or throw a seed.
+    trees: List[Tree] = game.trees
+    player: Player = game.players[player_num]
     moves: List[Move] = []
-    light_map = game.get_light_map()
-    tree_map = game.get_tree_map()
+    light_map: np.ndarray = game.get_light_map()
+    tree_map: np.ndarray = game.get_tree_map()
     moonlight = player.moonlight
     for size in range(4):
         if player.reserve.count[size]:
@@ -83,16 +85,6 @@ def get_moves(game: Game, player_num: int):
     Printer.print_hex_grid(tree_map)
     Printer.print_moves(player, player_num, moves)
     return moves
-
-
-"""
-
-Making a gui?
-Also the lists of VP tokens.
-Also, when determining moves,
-print the ascii board with colors!!! and dot sizes?
-
-"""
 
 
 def get_moonlight(trees, player, light_map):
@@ -143,3 +135,13 @@ while True:
 # and we have the text show the board state.
 # This can at first look just like this terminal output, but better.
 # Easy to make the text board have nice size, spacing, and color
+
+
+"""
+
+Making a gui?
+Also the lists of VP tokens.
+Also, when determining moves,
+print the ascii board with colors!!! and dot sizes?
+
+"""
