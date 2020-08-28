@@ -1,3 +1,5 @@
+from enum import Enum
+
 import numpy as np
 from dataclasses import dataclass
 from typing import List, Tuple
@@ -11,18 +13,6 @@ from typing import List, Tuple
 # 6,6 is the bottom-right
 # 0,6 and 6,0 don't exist.
 # the N/S axis is slanted to the upper-right / lower-left.
-
-# coords are in (y, x) format
-
-# Moon in position 1 thru 6:
-# Having a direction of its shine/shade
-# Starts in the east, shining west
-# +0 -1 (W-facing)
-# -1 -1 (NW-facing)
-# -1 +0 (NE-facing)
-# +0 +1 (E-facing)
-# +1 +1 (SE-facing)
-# +1 +0 (SW-facing)
 
 
 """
@@ -51,15 +41,6 @@ from typing import List, Tuple
 
 colors = "\033[92m", "\033[91m", "\033[93m", "\033[96m"
 ENDCOLOR = "\033[0m"
-CAST = ((0, -1), (-1, -1), (-1, 0), (0, 1), (1, 1), (1, 0))
-# y-coord first)
-# +0 -1 ( W-facing)
-# -1 -1 (NW-facing)
-# -1 0 (NE-facing)
-# +0 +1 ( E-facing)
-# +1 1 (SE-facing)
-# +1 0 (SW-facing)
-
 
 SEED = 0
 SMALL = 1
@@ -101,16 +82,38 @@ class Player:
         return Player(available=[2, 4, 1, 0], reserve=Reserve(), moonlight=0, victory_tokens=[])
 
 
+class Direction(str, Enum):
+    W = "West facing"
+    NW = "Northwest facing"
+    NE = "Northeast facing"
+    E = "East facing"
+    SE = "Southeast facing"
+    SW = "Southwest facing"
+
+    def cast(self):
+        return {
+           Direction.W: (0, -1),
+           Direction.NW: (-1, -1),
+           Direction.NE: (-1, 0),
+           Direction.E: (0, 1),
+           Direction.SE: (1, 1),
+           Direction.SW: (1, 0)
+        }[self]
+
+    def __str__(self):
+        return self
+
+
 @dataclass
 class Game:
     players: Tuple[Player, ...]
     trees: List[Tree]
-    direction: int
+    direction: Direction
 
     @staticmethod
     def create_game(num_players):
         game = Game(
-            players=tuple([Player.initial() for i in range(num_players)]),
+            players=tuple([Player.initial() for _ in range(num_players)]),
             trees=[
                 Tree(0, 1, 0, 0),
                 Tree(0, 1, 0, 3),
@@ -119,13 +122,13 @@ class Game:
                 Tree(2, 1, 6, 6),
                 Tree(2, 1, 3, 6),
             ],  # assume 3 players
-            direction=0,  # starts west-facing.
+            direction=Direction.W
         )
         return game
 
     def get_light_map(self):
         light_map = np.ones((7, 7), dtype=int)
-        shadow_dir = CAST[self.direction]
+        shadow_dir = self.direction.cast()
         for tree in self.trees:
             for i in range(1, tree.size + 1):
                 if (
@@ -232,20 +235,17 @@ def print_hex_grid(tree_map):
 def get_moves(game, player_num):
     # for each tree, there is:grow, harvest, or throw a seed.
     trees = game.trees
-    direction = game.direction
     player = game.players[player_num]
     moves: List[Move] = []
     light_map = game.get_light_map()
     tree_map = game.get_tree_map()
     moonlight = game.players[player_num].moonlight
     for size in range(4):
-
         if player.reserve.count[size]:
             cost = player.reserve.cost(size)
             if moonlight >= cost:
                 move = Move(player_num, "Buy", size, -1, -1, -1, -1, cost)
                 moves.append(move)
-
     for tree in trees:
         if tree.player == player_num and light_map[tree.y, tree.x]:
             if tree.size == 3:
@@ -323,7 +323,7 @@ while True:
     player_taking_turn = True
     while player_taking_turn:
         moves = get_moves(game, player_num)
-        print(["WEST", "NW", "NE", "EAST", "SE", "SW"][game.direction])
+        print(game.direction)
         print(
             colors[player_num] + "Player " + str(player_num) + ENDCOLOR,
             "\nwhich move? (by index; leave blank to end turn) " if moves else "(no moves; press enter)",
