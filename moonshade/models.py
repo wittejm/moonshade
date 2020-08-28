@@ -150,7 +150,7 @@ class Game:
                 tree_map[y][x] = -3
         return tree_map
 
-    def apply_move(self, move: Move):
+    def apply_move(self, move: Move) -> Optional[Tree]:
         player = self.players[move.player]
         player.moonlight -= move.cost()
         if move.name == "Grow":
@@ -163,8 +163,11 @@ class Game:
             self.trees = [tree for tree in self.trees if tree != move.source_tree]
             player.reserve.count[LARGE] += 1
         elif move.name == "Throw":
-            self.trees.append(Tree(move.player, 0, move.y_throw, move.x_throw))
+            new_tree = Tree(move.player, 0, move.y_throw, move.x_throw)
+            self.trees.append(new_tree)
             player.available[SEED] -= 1
+            return new_tree
         elif move.name == "Buy":
             player.available[move.new_size] += 1
             player.reserve.count[move.new_size] -= 1
+        return None

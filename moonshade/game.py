@@ -50,7 +50,7 @@ def get_throwable_range(tree: Tree) -> Iterator[Tuple[int, int]]:
                     yield i, j
 
 
-def get_moves(game: Game, player_num: int) -> Tuple[List[Move], np.ndarray]:
+def get_moves(game: Game, player_num: int, touched_trees: List[Tree]) -> Tuple[List[Move], np.ndarray]:
     # for each tree, there is: grow, harvest, or throw a seed.
     trees: List[Tree] = game.trees
     player: Player = game.players[player_num]
@@ -63,7 +63,7 @@ def get_moves(game: Game, player_num: int) -> Tuple[List[Move], np.ndarray]:
             move = Move(player_num, "Buy", new_size=size, source_tree=None, y_throw=-1, x_throw=-1, buy_cost=cost)
             moves.append(move)
     for tree in trees:
-        if tree.player == player_num and light_map[tree.y, tree.x]:
+        if tree.player == player_num and light_map[tree.y, tree.x] and tree not in touched_trees:
             if tree.size == 3:
                 move = Move(player_num, "Harvest", new_size=-1, source_tree=tree, y_throw=-1, x_throw=-1, buy_cost=-1)
                 moves.append(move)
@@ -106,8 +106,9 @@ while True:
     light_map = game.get_light_map()
     game.players[player_num].moonlight += get_moonlight(game.trees, player_num, light_map)
     player_taking_turn = True
+    touched_trees: List[Tree] = []
     while player_taking_turn:
-        moves, tree_map = get_moves(game, player_num)
+        moves, tree_map = get_moves(game, player_num, touched_trees)
         player = game.players[player_num]
         Printer.print_hex_grid(tree_map)
         Printer.print_moves(player, player_num, moves)
@@ -116,7 +117,11 @@ while True:
         if moves and response:
             index = int(response)
             if 0 <= index < len(moves):
-                game.apply_move(moves[index])
+                move = moves[index]
+                new_tree = game.apply_move(move)
+                if new_tree:
+                    touched_trees.append(new_tree)
+                touched_trees.append(move.source_tree)
         else:
             player_taking_turn = False
     player_num = (player_num + 1) % 3
