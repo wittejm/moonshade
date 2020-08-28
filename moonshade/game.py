@@ -50,7 +50,7 @@ def get_throwable_range(tree: Tree) -> Iterator[Tuple[int, int]]:
                     yield i, j
 
 
-def get_moves(game: Game, player_num: int):
+def get_moves(game: Game, player_num: int) -> Tuple[List[Move], np.ndarray]:
     # for each tree, there is: grow, harvest, or throw a seed.
     trees: List[Tree] = game.trees
     player: Player = game.players[player_num]
@@ -81,9 +81,7 @@ def get_moves(game: Game, player_num: int):
                         moves.append(move)
     moonlight = player.moonlight
     valid_moves = [move for move in moves if move.cost() <= moonlight]
-    Printer.print_hex_grid(tree_map)
-    Printer.print_moves(player, player_num, valid_moves)
-    return valid_moves
+    return valid_moves, tree_map
 
 
 def get_moonlight(trees, player, light_map):
@@ -105,7 +103,10 @@ while True:
     game.players[player_num].moonlight += get_moonlight(game.trees, player_num, light_map)
     player_taking_turn = True
     while player_taking_turn:
-        moves = get_moves(game, player_num)
+        moves, tree_map = get_moves(game, player_num)
+        player = game.players[player_num]
+        Printer.print_hex_grid(tree_map)
+        Printer.print_moves(player, player_num, moves)
         Printer.print_prompt(game.direction, player_num, moves)
         response = input()
         if moves and response:
