@@ -7,6 +7,9 @@ name = "pypi"
 numpy = "*"
 ipdb = "==0.13.2"
 ipython = "*"
+mypy = "*"
+moonshade = {editable = true, path = "."}
+black = "==19.10b0"
 
 [requires]
 python_version = "3.8"
